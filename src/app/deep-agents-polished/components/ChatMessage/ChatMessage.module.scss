@@ -1,0 +1,102 @@
+@use '../../styles/variables' as *;
+
+.message {
+  display: flex;
+  gap: $spacing-sm;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  margin-top: $spacing-sm;
+  
+  &.user {
+    flex-direction: row-reverse;
+
+    .bubble {
+      background-color: $color-user-message;
+      color: white;
+      margin-left: auto;
+    }
+    
+    .avatar {
+      background-color: $color-user-message;
+    }
+    
+    .avatarIcon {
+      color: $color-surface;
+    }
+  }
+  
+  &.assistant {
+    .bubble {
+      background-color: $color-background;
+      border: 1px solid $color-border;
+      color: $color-text-primary;
+    }
+    
+    .avatar {
+      background-color: $color-avatar-bg;
+    }
+    
+    .avatarIcon {
+      color: $color-secondary;
+    }
+  }
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: $radius-full;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.avatarHidden {
+  background-color: transparent !important;
+  // Keep the same dimensions to maintain spacing/alignment
+}
+
+.avatarIcon {
+  width: 16px;
+  height: 16px;
+}
+
+.content {
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 70%;
+}
+
+.bubble {
+  border-radius: $radius-lg;
+  padding: $spacing-sm;
+  overflow: hidden;
+  word-break: break-word;
+  width: fit-content;
+  max-width: 100%;
+}
+
+.text {
+  font-size: $font-size-sm;
+  line-height: $line-height-relaxed;
+  white-space: pre-wrap;
+  margin: 0;
+}
+
+.toolCalls {
+  margin-top: $spacing-sm;
+  display: flex;
+  flex-direction: column;
+  width: fit-content;
+  max-width: 100%;
+}
+
+.subAgents {
+  margin-top: $spacing-sm;
+  display: flex;
+  flex-direction: column;
+  width: fit-content;
+  max-width: 100%;
+}
