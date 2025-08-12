@@ -15,8 +15,7 @@ import styles from "./page.module.scss"
 export default function DeepAgentsPage() {
   const { session } = useAuthContext()
   const [threadId, setThreadId] = useQueryState("threadId")
-  const [selectedSubAgentId, setSelectedSubAgentId] = useState<string | null>(null)
-  const [currentSubAgents, setCurrentSubAgents] = useState<SubAgent[]>([])
+  const [selectedSubAgent, setSelectedSubAgent] = useState<SubAgent | null>(null)
   const [selectedFile, setSelectedFile] = useState<FileItem | null>(null)
   const [todos, setTodos] = useState<TodoItem[]>([])
   const [files, setFiles] = useState<Record<string, string>>({})
@@ -59,16 +58,10 @@ export default function DeepAgentsPage() {
 
   const handleNewThread = useCallback(() => {
     setThreadId(null)
-    setSelectedSubAgentId(null)
-    setCurrentSubAgents([])
+    setSelectedSubAgent(null)
     setTodos([])
     setFiles({})
   }, [setThreadId])
-  
-  const selectedSubAgent = useMemo(() => {
-    if (!selectedSubAgentId) return null
-    return currentSubAgents.find(sa => sa.id === selectedSubAgentId) || null
-  }, [selectedSubAgentId, currentSubAgents])
 
   return (
     <div className={styles.container}>
@@ -82,9 +75,9 @@ export default function DeepAgentsPage() {
       <div className={styles.mainContent}>
         <ChatInterface
           threadId={threadId}
+          selectedSubAgent={selectedSubAgent}
           setThreadId={setThreadId}
-          onSelectSubAgent={setSelectedSubAgentId}
-          onSubAgentsUpdate={setCurrentSubAgents}
+          onSelectSubAgent={setSelectedSubAgent}
           onTodosUpdate={setTodos}
           onFilesUpdate={setFiles}
           onNewThread={handleNewThread}
@@ -93,7 +86,7 @@ export default function DeepAgentsPage() {
         {selectedSubAgent && (
           <SubAgentPanel
             subAgent={selectedSubAgent}
-            onClose={() => setSelectedSubAgentId(null)}
+            onClose={() => setSelectedSubAgent(null)}
           />
         )}
       </div>

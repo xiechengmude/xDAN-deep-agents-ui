@@ -9,10 +9,10 @@ export interface ToolCall {
 export interface SubAgent {
   id: string
   name: string
-  status: "pending" | "active" | "completed" | "error"
   subAgentName: string
   input: any
   output?: any
+  status: "pending" | "active" | "completed" | "error"
 }
 
 export interface FileItem {

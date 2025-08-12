@@ -23,7 +23,7 @@ const SubAgentPanelComponent = ({
         return <CheckCircle className={styles.statusCompleted} />
       case "error":
         return <AlertCircle className={styles.statusError} />
-      case "active":
+      case "pending":
         return <Loader className={styles.statusActive} />
       default:
         return <Clock className={styles.statusPending} />

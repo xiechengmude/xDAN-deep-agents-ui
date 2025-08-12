@@ -1,6 +1,6 @@
 "use client"
 
-import React from "react"
+import React, { useEffect, useMemo } from "react"
 import { User, Bot } from "lucide-react"
 import { SubAgentIndicator } from "../SubAgentIndicator/SubAgentIndicator"
 import { ToolCallBox } from "../ToolCallBox/ToolCallBox"
@@ -12,24 +12,47 @@ import { extractStringFromMessageContent } from "../../utils/utils"
 
 interface ChatMessageProps {
   message: Message
-  toolCallsWithStatus: ToolCall[]
-  subAgents: SubAgent[]
+  toolCalls: ToolCall[]
   showAvatar: boolean
-  onSelectSubAgent: (subAgentId: string) => void
+  onSelectSubAgent: (subAgent: SubAgent) => void
+  selectedSubAgent: SubAgent | null
 }
 
 export const ChatMessage = React.memo<ChatMessageProps>(({ 
   message, 
-  toolCallsWithStatus,
-  subAgents,
+  toolCalls,
   showAvatar,
   onSelectSubAgent,
+  selectedSubAgent,
 }) => {  
   const isUser = message.type === "human"
   const messageContent = extractStringFromMessageContent(message)
   const hasContent = messageContent && messageContent.trim() !== ""
-  const hasToolCalls = toolCallsWithStatus.length > 0
-  const hasSubAgents = !isUser && subAgents.length > 0
+  const hasToolCalls = toolCalls.length > 0
+  const subAgents = useMemo(() => {
+    return toolCalls.filter((toolCall: ToolCall) => {
+      return toolCall.name === "task" && toolCall.args["subagent_type"] && toolCall.args["subagent_type"] !== "" && toolCall.args["subagent_type"] !== null
+    }).map((toolCall: ToolCall) => {
+      return {
+        id: toolCall.id,
+        name: toolCall.name,
+        subAgentName: toolCall.args["subagent_type"],
+        input: toolCall.args["description"],
+        output: toolCall.result,
+        status: toolCall.status,
+      }
+    })
+  }, [toolCalls])
+
+  const subAgentsString = useMemo(() => {
+    return JSON.stringify(subAgents)
+  }, [subAgents])
+
+  useEffect(() => {
+    if (subAgents.some((subAgent: SubAgent) => subAgent.id === selectedSubAgent?.id)) {
+      onSelectSubAgent(subAgents.find((subAgent: SubAgent) => subAgent.id === selectedSubAgent?.id)!)
+    }
+  }, [selectedSubAgent, onSelectSubAgent, subAgentsString])
   
   return (
     <div className={`${styles.message} ${isUser ? styles.user : styles.assistant}`}>
@@ -54,7 +77,7 @@ export const ChatMessage = React.memo<ChatMessageProps>(({
         )}
         {hasToolCalls && (
           <div className={styles.toolCalls}>
-            {toolCallsWithStatus.map((toolCall) => {
+            {toolCalls.map((toolCall: ToolCall) => {
               if (toolCall.name === "task") return null
               return (
                 <ToolCallBox 
@@ -65,13 +88,13 @@ export const ChatMessage = React.memo<ChatMessageProps>(({
             })}
           </div>
         )}
-        {hasSubAgents && (
+        {!isUser && subAgents.length > 0 && (
           <div className={styles.subAgents}>
-            {subAgents.map((subAgent) => (
+            {subAgents.map((subAgent: SubAgent, ix: number) => (
               <SubAgentIndicator 
                 key={subAgent.id} 
                 subAgent={subAgent} 
-                onClick={() => onSelectSubAgent(subAgent.id)} 
+                onClick={() => onSelectSubAgent(subAgent)} 
               />
             ))}
           </div>

@@ -8,14 +8,14 @@ import { ChatMessage } from "../ChatMessage/ChatMessage"
 import { ThreadHistorySidebar } from "../ThreadHistorySidebar/ThreadHistorySidebar"
 import type { SubAgent, TodoItem, ToolCall } from "../../types/types"
 import { useChat } from "../../hooks/useChat"
-import { convertTaskToolCallsToSubAgents } from "../../utils/utils"
 import styles from "./ChatInterface.module.scss"
+import { Message } from "@langchain/langgraph-sdk"
 
 interface ChatInterfaceProps {
   threadId: string | null
+  selectedSubAgent: SubAgent | null
   setThreadId: (value: string | ((old: string | null) => string | null) | null) => void
-  onSelectSubAgent: (subAgentId: string) => void
-  onSubAgentsUpdate: (subAgents: SubAgent[]) => void
+  onSelectSubAgent: (subAgent: SubAgent) => void
   onTodosUpdate: (todos: TodoItem[]) => void
   onFilesUpdate: (files: Record<string, string>) => void
   onNewThread: () => void
@@ -24,9 +24,9 @@ interface ChatInterfaceProps {
 
 export const ChatInterface = React.memo<ChatInterfaceProps>(({
   threadId,
+  selectedSubAgent,
   setThreadId,
   onSelectSubAgent,
-  onSubAgentsUpdate,
   onTodosUpdate,
   onFilesUpdate,
   onNewThread,
@@ -75,25 +75,25 @@ export const ChatInterface = React.memo<ChatInterfaceProps>(({
 
   const hasMessages = messages.length > 0
 
-  // Process messages to extract tool calls and create SubAgents
   const processedMessages = useMemo(() => {
+    /* 
+    1. Loop through all messages
+    2. For each AI message, add the AI message, and any tool calls to the messageMap
+    3. For each tool message, find the corresponding tool call in the messageMap and update the status and output
+    */
     const messageMap = new Map<string, any>()
-    messages.forEach(message => {
+    messages.forEach((message: Message) => {
       if (message.type === 'ai') {
-        const toolCalls: any[] = []
+        const toolCallsInMessage: any[] = []
         if (message.additional_kwargs?.tool_calls && Array.isArray(message.additional_kwargs.tool_calls)) {
-          toolCalls.push(...message.additional_kwargs.tool_calls)
+          toolCallsInMessage.push(...message.additional_kwargs.tool_calls)
         } else if (message.tool_calls && Array.isArray(message.tool_calls)) {
-          toolCalls.push(...message.tool_calls.filter((toolCall: any) => toolCall.name !== ''))
+          toolCallsInMessage.push(...message.tool_calls.filter((toolCall: any) => toolCall.name !== ''))
         } else if (Array.isArray(message.content)) {
           const toolUseBlocks = message.content.filter((block: any) => block.type === 'tool_use')
-          toolCalls.push(...toolUseBlocks)
+          toolCallsInMessage.push(...toolUseBlocks)
         }
-        // Filter out task tool calls (they become SubAgents)
-        const regularToolCalls = toolCalls.filter(tc => 
-          (tc.function?.name || tc.name) !== "task"
-        )
-        const toolCallsWithStatus = regularToolCalls.map((toolCall: any) => {
+        const toolCallsWithStatus = toolCallsInMessage.map((toolCall: any) => {
           const name = toolCall.function?.name || toolCall.name || toolCall.type || 'unknown'
           const args = toolCall.function?.arguments || toolCall.args || toolCall.input || {}
           return {
@@ -103,33 +103,32 @@ export const ChatInterface = React.memo<ChatInterfaceProps>(({
             status: 'pending' as const,
           } as ToolCall
         })
-        const subAgents = convertTaskToolCallsToSubAgents(message, messages)
-        
         messageMap.set(message.id!, {
           message,
           toolCalls: toolCallsWithStatus,
-          subAgents
         })
       } else if (message.type === 'tool') {
         const toolCallId = message.tool_call_id
-        if (toolCallId) {
-          for (const [, data] of messageMap.entries()) {
-            const toolCallIndex = data.toolCalls.findIndex((tc: any) => tc.id === toolCallId)
-            if (toolCallIndex !== -1) {
-              data.toolCalls[toolCallIndex] = {
-                ...data.toolCalls[toolCallIndex],
-                status: 'completed' as const,
-                result: typeof message.content === 'string' ? message.content : JSON.stringify(message.content)
-              }
-              break
-            }
-          }
+        if (!toolCallId) {
+          return
         }
-      } else {
+        for (const [, data] of messageMap.entries()) {
+          const toolCallIndex = data.toolCalls.findIndex((tc: any) => tc.id === toolCallId)
+          if (toolCallIndex === -1) {
+            continue
+          }
+          data.toolCalls[toolCallIndex] = {
+            ...data.toolCalls[toolCallIndex],
+            status: 'completed' as const,
+            // TODO: Make this nicer
+            result: typeof message.content === 'string' ? message.content : JSON.stringify(message.content)
+          }
+          break
+        }
+      } else if (message.type === 'human') {
         messageMap.set(message.id!, {
           message,
           toolCalls: [],
-          subAgents: []
         })
       }
     })
@@ -142,20 +141,6 @@ export const ChatInterface = React.memo<ChatInterfaceProps>(({
       }
     })
   }, [messages])
-  
-  const allSubAgents = useMemo(() => {
-    return processedMessages.flatMap(data => data.subAgents || [])
-  }, [processedMessages])
-  
-  const memoizedSubAgents = useMemo(() => {
-    return JSON.stringify(allSubAgents)
-  }, [allSubAgents])
-  
-  useEffect(() => {
-    if (onSubAgentsUpdate) {
-      onSubAgentsUpdate(allSubAgents)
-    }
-  }, [memoizedSubAgents, onSubAgentsUpdate])
 
   return (
     <div className={styles.container}>
@@ -206,10 +191,10 @@ export const ChatInterface = React.memo<ChatInterfaceProps>(({
               <ChatMessage
                 key={data.message.id}
                 message={data.message}
-                toolCallsWithStatus={data.toolCalls}
-                subAgents={data.subAgents}
+                toolCalls={data.toolCalls}
                 showAvatar={data.showAvatar}
                 onSelectSubAgent={onSelectSubAgent}
+                selectedSubAgent={selectedSubAgent}
               />
             ))}
             {isLoading && (
