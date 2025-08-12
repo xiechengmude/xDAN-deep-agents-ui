@@ -9,8 +9,8 @@ TODO: Link Video
 Create a `.env.local` file and set two variables
 
 ```env
-DEPLOYMENT_URL="your agent server URL, http://127.0.0.1:2024 for locally running agents"
-AGENT_ID=<your agent ID from langgraph.json>
+NEXT_PUBLIC_DEPLOYMENT_URL="your agent server URL, http://127.0.0.1:2024 for locally running agents"
+NEXT_PUBLIC_AGENT_ID=<your agent ID from langgraph.json>
 ```
 
 Install all dependencies and run your app.
