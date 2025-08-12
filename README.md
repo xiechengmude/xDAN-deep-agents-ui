@@ -13,14 +13,11 @@ DEPLOYMENT_URL="your agent server URL, http://127.0.0.1:2024 for locally running
 AGENT_ID=<your agent ID from langgraph.json>
 ```
 
+Install all dependencies and run your app.
+
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) to run your agent!
+Open [http://localhost:3000](http://localhost:3000) to test out your deep agent!
