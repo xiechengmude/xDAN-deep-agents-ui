@@ -4,6 +4,8 @@ import { type Message } from "@langchain/langgraph-sdk";
 import { getDeployment } from "@/lib/environment/deployments";
 import { v4 as uuidv4 } from "uuid";
 import type { TodoItem } from "../types/types";
+import { createClient } from "@/lib/client";
+import { useAuthContext } from "@/providers/Auth";
 
 type StateType = {
   messages: Message[];
@@ -20,13 +22,8 @@ export function useChat(
   onFilesUpdate: (files: Record<string, string>) => void,
 ) {
   const deployment = useMemo(() => getDeployment(), []);
-
-  const deploymentUrl = useMemo(() => {
-    if (!deployment?.deploymentUrl) {
-      throw new Error(`No deployment URL configured in environment`);
-    }
-    return deployment.deploymentUrl;
-  }, [deployment]);
+  const { session } = useAuthContext();
+  const accessToken = session?.accessToken;
 
   const agentId = useMemo(() => {
     if (!deployment?.agentId) {
@@ -50,8 +47,8 @@ export function useChat(
   );
 
   const stream = useStream<StateType>({
-    apiUrl: deploymentUrl,
     assistantId: agentId,
+    client: createClient(accessToken || ""),
     reconnectOnMount: true,
     threadId: threadId ?? null,
     onUpdateEvent: handleUpdateEvent,
