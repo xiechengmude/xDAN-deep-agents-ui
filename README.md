@@ -7,7 +7,7 @@ If the term "Deep Agents" is new to you, check out these videos!
 [Implementing Deep Agents](https://www.youtube.com/watch?v=TTMYJAw5tiA&t=701s)
 
 
-And check out this [video](https://youtu.be/6jLIy1jyZtI) for a walkthrough of this UI.
+And check out this [video](https://youtu.be/0CE_BhdnZZI) for a walkthrough of this UI.
 
 ### Connecting to a Local LangGraph Server
 
