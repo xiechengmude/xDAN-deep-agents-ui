@@ -14,7 +14,7 @@ And check out this video for a walkthrough of this UI.
 Create a `.env.local` file and set two variables
 
 ```env
-NEXT_PUBLIC_DEPLOYMENT_URL="http://127.0.0.1:2024" // Or your server URL
+NEXT_PUBLIC_DEPLOYMENT_URL="http://127.0.0.1:2024" # Or your server URL
 NEXT_PUBLIC_AGENT_ID=<your agent ID from langgraph.json>
 ```
 
