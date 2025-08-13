@@ -87,7 +87,7 @@ export function useChat(
   }, [stream]);
 
   return {
-    messages: threadId ? stream.messages : [],
+    messages: stream.messages,
     isLoading: stream.isLoading,
     sendMessage,
     stopStream,
