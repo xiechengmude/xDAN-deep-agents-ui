@@ -2,7 +2,7 @@
 
 import React, { useMemo, useCallback } from "react";
 import { FileText, Copy, Download } from "lucide-react";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
@@ -88,6 +88,7 @@ export const FileViewDialog = React.memo<FileViewDialogProps>(
     return (
       <Dialog open={true} onOpenChange={onClose}>
         <DialogContent className={styles.dialog}>
+          <DialogTitle className="sr-only">{file.path}</DialogTitle>
           <div className={styles.header}>
             <div className={styles.titleSection}>
               <FileText className={styles.fileIcon} />
