@@ -213,7 +213,7 @@ export const ChatInterface = React.memo<ChatInterfaceProps>(
             {!hasMessages && !isLoading && !isLoadingThreadState && (
               <div className={styles.emptyState}>
                 <Bot size={48} className={styles.emptyIcon} />
-                <h2>Start a conversation or select a thread from history</h2>
+                <h2>开启我们的深度谈话和探索金融世界吧!</h2>
               </div>
             )}
             {isLoadingThreadState && (
